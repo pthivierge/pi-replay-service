@@ -25,16 +25,7 @@ namespace PIReplay.Settings {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0/10 * * * * ?")]
-        public string BasicTasksSchedule {
-            get {
-                return ((string)(this["BasicTasksSchedule"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("30")]
+        [global::System.Configuration.DefaultSettingValueAttribute("365")]
         public double ReplayTimeOffsetDays {
             get {
                 return ((double)(this["ReplayTimeOffsetDays"]));
@@ -83,6 +74,24 @@ namespace PIReplay.Settings {
         public string TagQueryString {
             get {
                 return ((string)(this["TagQueryString"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("100")]
+        public int BulkPageSize {
+            get {
+                return ((int)(this["BulkPageSize"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("100")]
+        public int BulkParallelChunkSize {
+            get {
+                return ((int)(this["BulkParallelChunkSize"]));
             }
         }
     }

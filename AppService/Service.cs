@@ -107,10 +107,10 @@ namespace PIReplay.Service
 
         private void initScheduler()
         {
-            string dailyReportCronExp = General.Default.BasicTasksSchedule;
-            _scheduler.AddTask("BaseTask", dailyReportCronExp, BasicTask);
+            //string dailyReportCronExp = Settings.General.Default.BasicTasksSchedule;
+            //_scheduler.AddTask("BaseTask", dailyReportCronExp, BasicTask);
 
-            _scheduler.Start();
+            //_scheduler.Start();
         }
 
         private void BasicTask()
