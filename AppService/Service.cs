@@ -97,10 +97,13 @@ namespace PIReplay.Service
 
                 _logger.Info("Service is Started.");
 
+                ValidateSettings();
                 //  this scheduler was part of the app template.
                 // not used for now, but could be a nice and easy way to schedule other tasks in the service
                 //  initScheduler();
-                _replayer=new Replayer();
+                _replayer =new Replayer();
+                
+
                 _replayer.Run(General.Default.ServerName, General.Default.TagQueryString);
 
             }
@@ -108,6 +111,13 @@ namespace PIReplay.Service
             {
                 _logger.Fatal(exception);
             }
+        }
+
+        private void ValidateSettings()
+        {
+            if(string.IsNullOrEmpty(General.Default.TagQueryString))
+                throw new Exception("The parameter TagQueryString cannot be empty.");
+
         }
 
         protected override void OnStop()
