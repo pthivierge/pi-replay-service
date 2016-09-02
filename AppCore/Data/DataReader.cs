@@ -139,6 +139,9 @@ namespace PIReplay.Core
 
                     }
 
+                    if(i==0)
+                        throw new Exception("There is no PI Point returned by the search query. Please check the settings.");
+
                 }
 
 
