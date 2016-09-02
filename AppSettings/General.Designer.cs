@@ -25,7 +25,7 @@ namespace PIReplay.Settings {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("365")]
+        [global::System.Configuration.DefaultSettingValueAttribute("7")]
         public double ReplayTimeOffsetDays {
             get {
                 return ((double)(this["ReplayTimeOffsetDays"]));
@@ -34,7 +34,7 @@ namespace PIReplay.Settings {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("12")]
+        [global::System.Configuration.DefaultSettingValueAttribute("24")]
         public int BackFillHoursPerDataChunk {
             get {
                 return ((int)(this["BackFillHoursPerDataChunk"]));
@@ -92,6 +92,24 @@ namespace PIReplay.Settings {
         public int BulkParallelChunkSize {
             get {
                 return ((int)(this["BulkParallelChunkSize"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("08/12/2016 17:00:00")]
+        public global::System.DateTime BackfillDefaultStartTime {
+            get {
+                return ((global::System.DateTime)(this["BackfillDefaultStartTime"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("50")]
+        public int SleepTimeBetweenChunksMs {
+            get {
+                return ((int)(this["SleepTimeBetweenChunksMs"]));
             }
         }
     }

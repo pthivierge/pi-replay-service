@@ -90,6 +90,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Data\DataPacket.cs" />
     <Compile Include="Data\DataReader.cs" />
     <Compile Include="Data\DataWriter.cs" />
     <Compile Include="Helpers\ExtensionMethods.cs" />

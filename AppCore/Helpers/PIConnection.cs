@@ -36,6 +36,7 @@ namespace PIReplay.Core
         /// <param name="server">Name of the PI System (AF Server) to connect to</param>
         public PIConnection(string server)
         {
+            
             if (_piServers.Contains(server))
                 _piServer = _piServers[server];
             else
@@ -51,6 +52,8 @@ namespace PIReplay.Core
 
         public bool Connect()
         {
+
+
             _logger.InfoFormat("Trying to connect to PI Data Archive {0}. As {1}", _piServer.Name,
                 _piServer.CurrentUserName);
 

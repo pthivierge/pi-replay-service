@@ -3,10 +3,10 @@
   <Profiles />
   <Settings>
     <Setting Name="ReplayTimeOffsetDays" Type="System.Double" Scope="Application">
-      <Value Profile="(Default)">365</Value>
+      <Value Profile="(Default)">7</Value>
     </Setting>
     <Setting Name="BackFillHoursPerDataChunk" Type="System.Int32" Scope="Application">
-      <Value Profile="(Default)">12</Value>
+      <Value Profile="(Default)">24</Value>
     </Setting>
     <Setting Name="TagsChunkSize" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">250</Value>
@@ -25,6 +25,12 @@
     </Setting>
     <Setting Name="BulkParallelChunkSize" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">100</Value>
+    </Setting>
+    <Setting Name="BackfillDefaultStartTime" Type="System.DateTime" Scope="Application">
+      <Value Profile="(Default)">08/12/2016 17:00:00</Value>
+    </Setting>
+    <Setting Name="SleepTimeBetweenChunksMs" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">50</Value>
     </Setting>
   </Settings>
 </SettingsFile>

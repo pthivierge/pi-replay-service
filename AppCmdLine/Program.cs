@@ -106,7 +106,13 @@ namespace PIReplay.CommandLine
                             var et = AFTime.Parse(options.deleteHistory[2]);
                             _logger.InfoFormat("Deleting history for tag: {0} between {1:G} and {2:G}", piPoint.Name, st.LocalTime, et.LocalTime);
 
-                            piPoint.ReplaceValues(new AFTimeRange(st, et), new List<AFValue>());
+                            var errors=piPoint.ReplaceValues(new AFTimeRange(st, et), new List<AFValue>());
+
+                            if (errors != null && errors.HasErrors)
+                            {
+                                _logger.Error(errors.Errors);
+                                _logger.Error(errors.PIServerErrors);
+                            }
                         }
 
                     }

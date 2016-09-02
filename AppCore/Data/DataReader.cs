@@ -25,6 +25,7 @@ using OSIsoft.AF.Asset;
 using OSIsoft.AF.Data;
 using OSIsoft.AF.PI;
 using OSIsoft.AF.Time;
+using PIReplay.Core.Data;
 using PIReplay.Settings;
 using PIReplay.Core.Helpers;
 using Timer = System.Timers.Timer;
@@ -37,18 +38,18 @@ namespace PIReplay.Core
         private DateTime _nextStartTime;
         private readonly ILog _logger = LogManager.GetLogger(typeof(DataReader));
         readonly PIPointsProvider _pointsProvider = null;
-        private readonly BlockingCollection<List<AFValue>> _writeQueue = null;
+        private readonly BlockingCollection<DataPacket> _writeQueue = null;
         private Timer _timer = new Timer();
         private object _timerLock = new object();
         private TimeSpan _timeOffset;
 
         private bool _backfill = false;
 
-        public DataReader(PIPointsProvider pointsProvider, BlockingCollection<List<AFValue>> writeQueue)
+        public DataReader(PIPointsProvider pointsProvider, BlockingCollection<DataPacket> writeQueue)
         {
             _pointsProvider = pointsProvider;
             _writeQueue = writeQueue;
-            _timeOffset= TimeSpan.FromDays(Settings.General.Default.ReplayTimeOffsetDays);
+            _timeOffset = TimeSpan.FromDays(Settings.General.Default.ReplayTimeOffsetDays);
         }
 
         public void RunBackfill()
@@ -112,31 +113,32 @@ namespace PIReplay.Core
 
             try
             {
-                
-                
-                
+
+
+
 
                 // if we are not backfilling, we are using the _nextStartTime, if we backfill, we make a data call to get it from the data.
-                DateTime startTime;
-                DateTime endTime;
-                var timeRanges = DefineTimes(_pointsProvider, out startTime, out endTime);
-                
+                var timeRanges = GetTimeRanges(_pointsProvider);
+
                 // inserts the data, sorted by time
                 foreach (var timeRange in timeRanges)
                 {
                     var i = 0;
-                    _logger.InfoFormat("Reading the data for time range: {0} to {1}", timeRange.StartTime,timeRange.EndTime);
+                    _logger.InfoFormat("Reading the data for time range: {0:G} to {1:G}", timeRange.StartTime.LocalTime, timeRange.EndTime.LocalTime);
 
                     foreach (var pointsChunk in _pointsProvider.GetPointsByChunks(conf.TagsChunkSize))
                     {
                         i++;
-                        _logger.InfoFormat("Processing tag chunk {0} - (tag chunk size: {1})",i, conf.TagsChunkSize);
+                        _logger.InfoFormat("Processing tag chunk {0} - (tag chunk size: {1})", i, conf.TagsChunkSize);
                         var pointsList = new PIPointList(pointsChunk);
 
-                        GetRecordedValuesBulkParrallel(pointsList,timeRange, conf.BulkPageSize,4,conf.BulkParallelChunkSize, new CancellationToken());
+                        ReadValues(pointsList, timeRange, conf.BulkPageSize, 4, conf.BulkParallelChunkSize, new CancellationToken());
+
+                        if(!_backfill)
+                            Thread.Sleep(conf.SleepTimeBetweenChunksMs);
 
                     }
-                    
+
                 }
 
 
@@ -149,42 +151,52 @@ namespace PIReplay.Core
 
 
 
-        private List<AFTimeRange> DefineTimes(PIPointsProvider provider, out DateTime startTime, out DateTime endTime)
+        private List<AFTimeRange> GetTimeRanges(PIPointsProvider provider)
         {
-            startTime=DateTime.MaxValue;
-            
+
+            DateTime startTime;
+            DateTime endTime;
 
             // when backfilling, we will get the oldest timestamp in the snapshot
             if (_backfill)
             {
+                startTime = DateTime.MaxValue;
                 int i = 0;
                 foreach (var tagChunk in provider.GetPointsByChunks(Settings.General.Default.TagsChunkSize))
                 {
                     i++;
                     _logger.InfoFormat("Looking for minimum snapshot time in the data for tag chunk: {0} - chunk size: {1}", i, Settings.General.Default.TagsChunkSize);
-                    var pointsList=new PIPointList(tagChunk);
-                    var time = pointsList.CurrentValue().Min(v => v.Timestamp.LocalTime) - _timeOffset;
+                    var pointsList = new PIPointList(tagChunk);
+                    var time = pointsList.CurrentValue().Min(v => v.Timestamp.LocalTime);
                     startTime = time < startTime ? time : startTime;
                 }
-
-                _logger.InfoFormat("Backfill start time found {0:G}",startTime.ToLocalTime());
-
                 
+
+                if (startTime < DateTime.Now - TimeSpan.FromDays(Settings.General.Default.ReplayTimeOffsetDays))
+                    startTime = Settings.General.Default.BackfillDefaultStartTime;
+
+
+                endTime = DateTime.Now.ToLocalTime();
+                _nextStartTime = endTime.AddSeconds(1);
+
+                _logger.InfoFormat("Backfill start time: {0:G} - end time: {1:G}", startTime.ToLocalTime(),endTime.ToLocalTime());
+
             }
             else
             {
                 startTime = _nextStartTime;
+                endTime = DateTime.Now;
+                _nextStartTime = endTime.AddSeconds(1);
             }
 
-            endTime = DateTime.Now - _timeOffset;
-            _nextStartTime = endTime.AddSeconds(1);
-            var timeRanges = GetTimePeriods(startTime, endTime);
+
+            var timeRanges = GetTimePeriods(startTime - _timeOffset, endTime - _timeOffset);
             return timeRanges;
         }
 
         private List<AFTimeRange> GetTimePeriods(DateTime start, DateTime end)
         {
-            var datesIntervals = TimeStampsGenerator.GetAfTimeRanges(TimeSpan.FromHours(Settings.General.Default.BackFillHoursPerDataChunk), start, end);
+            var datesIntervals = TimeStampsGenerator.GetAfTimeRanges(TimeSpan.FromHours(Settings.General.Default.BackFillHoursPerDataChunk), start.ToLocalTime(), end.ToLocalTime());
             return datesIntervals;
         }
 
@@ -192,7 +204,7 @@ namespace PIReplay.Core
         /// This method splits a point list into severall smaller lists and perform bulk calls on each list
         /// In parallel.  
         /// </summary>
-        private void GetRecordedValuesBulkParrallel(IEnumerable<PIPoint> PiPoints, AFTimeRange timeRange, int bulkPageSize, int maxDegOfParallel, int bulkParallelChunkSize, CancellationToken cancelToken)
+        private void ReadValues(IEnumerable<PIPoint> PiPoints, AFTimeRange timeRange, int bulkPageSize, int maxDegOfParallel, int bulkParallelChunkSize, CancellationToken cancelToken)
         {
 
             _logger.WarnFormat("QUERY (BULK-P) # - PERIOD: {3} to {4} - MAX DEG. PAR. {0}, TAG_CHUNK_SIZE {1}, TAG_PAGE_SIZE {2},", maxDegOfParallel, bulkParallelChunkSize, bulkPageSize, timeRange.StartTime, timeRange.EndTime);
@@ -212,14 +224,39 @@ namespace PIReplay.Core
                         IEnumerable<AFValues> data = pointList.RecordedValues(timeRange,
                             AFBoundaryType.Inside, String.Empty, false, pagingConfiguration).ToList();
 
-                        
+
                         _logger.InfoFormat("READ Recorded values between {0:G} and {1:G}. {2} values found", timeRange.StartTime.LocalTime, timeRange.EndTime.LocalTime, data.Sum(x => x.Count));
 
+                        List<AFValue> singleListData=new List<AFValue>();
 
-                        var singleListData = data.SelectMany(x => x).ToList();
 
+                        // inserting no data when backfilling if no data is found in the period
+                        if (_backfill)
+                        {
+                            foreach (var valuesInPoint in data)
+                            {
+                                if (valuesInPoint.Count == 0)
+                                {
+
+                                    var value = new AFValue();
+                                    value.PIPoint = valuesInPoint.PIPoint;
+                                    value.Value = "No Data";
+                                    value.Timestamp = timeRange.EndTime;
+                                    singleListData.Add(value);
+                                }
+
+                            }
+
+                        }
+
+
+                        singleListData.AddRange(data.SelectMany(x => x).ToList());
+                        
                         if (singleListData.Count == 0)
+                        {
                             return;
+                        }
+
 
                         // re-adjusting the timestamp before writing it to the PI Data Archive
                         singleListData.ForEach(v =>
@@ -228,7 +265,11 @@ namespace PIReplay.Core
                         });
 
 
-                        _writeQueue.Add(singleListData);
+                        _writeQueue.Add(new DataPacket()
+                        {
+                            Data = singleListData,
+                            IsBackFillData = _backfill
+                        });
                         _logger.DebugFormat("QUEUED {0} values to be written", singleListData.Count);
 
 

@@ -72,7 +72,7 @@ namespace PIReplay.Core
 
                 dates.Add(new AFTimeRange(st,et));
 
-                _logger.DebugFormat("Timerange between {0} and {1}",st,et);
+                _logger.DebugFormat("Timerange to make read call - {0} and {1}",st.ToLocalTime(),et.ToLocalTime());
             }
 
             return dates;

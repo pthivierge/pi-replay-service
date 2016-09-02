@@ -1,37 +1,46 @@
-# CS-Solution-Template
+# Todo
 
-This is a full C# Solution Template With Service, Command Line and settings editor.
-
-This solution is a quick start, you can delete parts you dont need, for instance the service. It uses a shared config file for the solution so the .Settings Project can work for all projects in the solution.
-Also there are post build events that puts everything togheter.  This is where you should test your application.
-
-More explanations to come. Feel free to ask questions.
-
-
-#Getting started
-
-- Download the zip and extract it in a folder
-- Open RenameProject.ps1 and CHANGE THE VARIABLES VALUES TO FIT YOUR NEED --> AKA: Company Name, Project/product long Name, Short name (used for namespaces), Service displayname and description, year.
-- Right click RenameProject.ps1, and select "Run with powershell"
-- Delete RenameProject.ps1
-- Delete the .git folder (otherwise you'll keep tracking changes of the original repo)
+- Write the readme
+- use default server, if setting empty.
+- Remove: delete values using the old fashion method. if cant make it work with the classic method.
+- Cleanup logs and make them more comprehensive
+- When running in normal operation:
+	- make a single list of tags, or use a much higher tag count for the list(s)
+	- use a single thread and no multi threads
 
 
-- You may want to change icons and look of the Settings GUI
-
-
-#How to use the template solution: 
-
-+ The business code logic needs to be written in the Core dll.
-
-+ Then use the command line and service code to write the code to call business code from the dll.
-
-+ After compiling: always use the /Build folder in the first level directory level to test the application.
-
-+ To install the service
- - run a command prompt as administrator
- - navigate to service folder
- - run: YourAppServiceService --install / YourAppServiceService --uninstall
+#Settings sample:
+  <PIReplay.Settings.General>
+        <setting name="ReplayTimeOffsetDays" serializeAs="String">
+            <value>365</value>
+        </setting>
+        <setting name="BackFillHoursPerDataChunk" serializeAs="String">
+            <value>24</value>
+        </setting>
+        <setting name="TagsChunkSize" serializeAs="String">
+            <value>500</value>
+        </setting>
+        <setting name="DataCollectionFrequencySeconds" serializeAs="String">
+            <value>5</value>
+        </setting>
+        <setting name="ServerName" serializeAs="String">
+            <value>pidemo2016</value>
+        </setting>
+        <setting name="TagQueryString" serializeAs="String">
+            <value>tag:=simulator.random.*</value>
+        </setting>
+        <setting name="BulkPageSize" serializeAs="String">
+            <value>1000</value>
+        </setting>
+        <setting name="BulkParallelChunkSize" serializeAs="String">
+            <value>100</value>
+        </setting>
+        <setting name="BackfillDefaultStartTime" serializeAs="String">
+            <value>08/12/2016 17:00:00</value>
+        </setting>
+        <setting name="SleepTimeBetweenChunksMs" serializeAs="String">
+            <value>200</value>
+        </setting>
 
 #License
  

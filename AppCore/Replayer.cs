@@ -24,6 +24,7 @@ using System.Timers;
 using log4net;
 using OSIsoft.AF;
 using OSIsoft.AF.Asset;
+using PIReplay.Core.Data;
 using PIReplay.Settings;
 
 namespace PIReplay.Core
@@ -35,7 +36,7 @@ namespace PIReplay.Core
         private DataReader _dataReader = null;
         private DataWriter _dataWriter = null;
 
-        private BlockingCollection<List<AFValue>> _queue=new BlockingCollection<List<AFValue>>();
+        private BlockingCollection<DataPacket> _queue=new BlockingCollection<DataPacket>();
 
 
         public Replayer()

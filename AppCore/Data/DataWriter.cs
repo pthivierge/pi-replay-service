@@ -25,6 +25,7 @@ using log4net;
 using OSIsoft.AF.Asset;
 using OSIsoft.AF.Data;
 using OSIsoft.AF.PI;
+using PIReplay.Core.Data;
 
 namespace PIReplay.Core
 {
@@ -38,14 +39,14 @@ namespace PIReplay.Core
     {
 
         private static readonly ILog _logger = LogManager.GetLogger(typeof(DataWriter));
-        private readonly BlockingCollection<List<AFValue>> _dataQueue = null;
+        private readonly BlockingCollection<DataPacket> _dataQueue = null;
         PIServer _server;
         private readonly CancellationTokenSource _cancellationToken = new CancellationTokenSource();
         /// <summary>
         /// 
         /// </summary>
         /// <param name="dataQueue">Queue from wich the data writer receives the data</param>
-        public DataWriter(BlockingCollection<List<AFValue>> dataQueue, PIServer server)
+        public DataWriter(BlockingCollection<DataPacket> dataQueue, PIServer server)
         {
             _dataQueue = dataQueue;
             _server = server;
@@ -67,10 +68,28 @@ namespace PIReplay.Core
 
             foreach (var vals in _dataQueue.GetConsumingEnumerable(cancelToken))
             {
-                vals.Sort();
+                vals.Data.Sort();
+                _logger.InfoFormat("WRITTING {0} values", vals.Data.Count);
+                var insertMode = AFUpdateOption.InsertNoCompression;
 
-                _logger.InfoFormat("WRITTING {0} values", vals.Count);
-                _server.UpdateValues(vals, AFUpdateOption.Insert, AFBufferOption.BufferIfPossible);
+                if (vals.IsBackFillData)
+                {
+                    insertMode = AFUpdateOption.Insert;
+                }
+
+                //foreach (var val in vals.Data)
+                //{
+                //    _logger.DebugFormat("writing {0} at {1}", val.Value,val.Timestamp);
+                //}
+
+                var errors=_server.UpdateValues(vals.Data, insertMode, AFBufferOption.BufferIfPossible);
+
+                if (errors != null && errors.HasErrors)
+                {
+                    _logger.Error(errors.Errors);
+                    _logger.Error(errors.PIServerErrors);
+                }
+
 
             }
 
