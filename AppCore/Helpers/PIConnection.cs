@@ -36,6 +36,13 @@ namespace PIReplay.Core
         /// <param name="server">Name of the PI System (AF Server) to connect to</param>
         public PIConnection(string server)
         {
+
+            if (string.IsNullOrEmpty(server))
+            {
+                server = _piServers.DefaultPIServer.Name;
+                _logger.InfoFormat("The server name was not found in the configuration, will use default server: {0}", server);
+            }
+                
             
             if (_piServers.Contains(server))
                 _piServer = _piServers[server];
