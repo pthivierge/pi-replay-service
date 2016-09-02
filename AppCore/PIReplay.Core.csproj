@@ -96,6 +96,7 @@
     <Compile Include="Helpers\ExtensionMethods.cs" />
     <Compile Include="Helpers\General.cs" />
     <Compile Include="Helpers\PIConnection.cs" />
+    <Compile Include="Helpers\PIHelpers.cs" />
     <Compile Include="Helpers\TimeStampsGenerator.cs" />
     <Compile Include="Replayer.cs" />
     <Compile Include="Search\PIPointsProvider.cs" />
