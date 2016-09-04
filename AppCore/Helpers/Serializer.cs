@@ -17,7 +17,7 @@ using System;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 
-namespace PIReplay.Core.Helpers
+namespace PIReplay.Core.PISystemHelpers
 {
     public static class Serializer
     {

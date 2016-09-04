@@ -15,7 +15,7 @@
 #endregion
 using System.IO;
 
-namespace PIReplay.Core.Helpers
+namespace PIReplay.Core.PISystemHelpers
 {
     /// <summary>
     /// General Helpers Class

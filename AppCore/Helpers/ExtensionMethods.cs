@@ -17,7 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace PIReplay.Core.Helpers
+namespace PIReplay.Core.PISystemHelpers
 {
     public static class ExtensionMethods
     {

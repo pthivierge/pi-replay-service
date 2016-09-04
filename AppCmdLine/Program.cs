@@ -24,7 +24,7 @@ using OSIsoft.AF.Data;
 using OSIsoft.AF.PI;
 using OSIsoft.AF.Time;
 using PIReplay.Core;
-using PIReplay.Core.Helpers;
+using PIReplay.Core.PISystemHelpers;
 
 
 namespace PIReplay.CommandLine
