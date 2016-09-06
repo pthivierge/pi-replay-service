@@ -86,7 +86,11 @@ namespace PIReplay.Core
                         v.Timestamp = v.Timestamp + _timeOffset;
                     });
 
-                        _writeQueue.Add(new DataPacket() { Data = data });
+                        _writeQueue.Add(
+                            new DataPacket()
+                            {
+                                Data = data
+                            });
                     },
                     _pointsProvider,
                     0,
@@ -147,7 +151,7 @@ namespace PIReplay.Core
                         PIHelpers.RecordedBulkByChunks(
                             timeRange,
                             Settings.General.Default.NormalOpTagsChunkSize,
-                            true,
+                            false,
                             (data) =>
                             {
                                 // re-adjusting the timestamp before writing it to the PI Data Archive
@@ -156,7 +160,11 @@ namespace PIReplay.Core
                                             v.Timestamp = v.Timestamp + _timeOffset;
                                         });
 
-                                _writeQueue.Add(new DataPacket() { Data = data });
+                                _writeQueue.Add(
+                                    new DataPacket()
+                                    {
+                                        Data = data
+                                    });
                             },
                             _pointsProvider,
                             Settings.General.Default.NormalSleepTimeBetweenChunks,
