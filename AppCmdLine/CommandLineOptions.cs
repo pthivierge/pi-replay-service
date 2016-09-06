@@ -27,6 +27,9 @@ namespace PIReplay.CommandLine
         [OptionArray("deleteHistory", HelpText = "Deletes Historical data for the specified time range of corresponding tags. Takes multiple parameters: [server] [delStartTime] [delEndTime] [TagSearchQuery] e.g --deleteHistory server1 *-1d * \"tag:=Unit1* AND Location1:=1 AND PointSource:=L\"", Required = false, MutuallyExclusiveSet = "deleteHist")]
         public string[] deleteHistory { get; set; }
 
+        [Option("deleteForceUpdateValuesMethod", HelpText = "Force the delete value method to use the UpdateValues call. It reads all values before deleting them.", MutuallyExclusiveSet = "deleteHist")]
+        public bool ForceUpdateValuesMethod { get; set; }
+
         [HelpOption]
         public string GetUsage()
         {

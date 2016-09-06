@@ -30,9 +30,7 @@ To deal with this, this application makes data calls in small(er) chunks, and th
 done - Remove: delete values using the old fashion method. if cant make it work with the classic method.
 - refactor the read data class, this is a mess: split the backfill and the read data, or find a way to remove all ifs... 
 - Cleanup logs and make them more comprehensive
-- When running in normal operation:
-	- make a single list of tags, or use a much higher tag count for the list(s)
-	- use a single thread and no multi threads
+
 
 #Settings example
 

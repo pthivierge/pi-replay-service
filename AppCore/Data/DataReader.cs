@@ -42,18 +42,17 @@ namespace PIReplay.Core
         private Timer _timer = new Timer();
         private object _timerLock = new object();
         private TimeSpan _timeOffset;
-
-        private CancellationToken cancellationToken=new CancellationToken();
-
+        private CancellationToken _cancellationToken;
         
 
         private bool _backfill = false;
 
-        public DataReader(PIPointsProvider pointsProvider, BlockingCollection<DataPacket> writeQueue)
+        public DataReader(PIPointsProvider pointsProvider, BlockingCollection<DataPacket> writeQueue, CancellationToken token)
         {
             _pointsProvider = pointsProvider;
             _writeQueue = writeQueue;
             _timeOffset = TimeSpan.FromDays(Settings.General.Default.ReplayTimeOffsetDays);
+            _cancellationToken = token;
         }
 
         /// <summary>
@@ -64,7 +63,39 @@ namespace PIReplay.Core
             _logger.Info("Running backfill");
             _backfill = true;
             var timeRanges = GetTimeRanges(_pointsProvider);
-            ReadData(timeRanges);
+
+            var conf = Settings.General.Default;
+
+            // inserts the data, sorted by time
+            foreach (var timeRange in timeRanges)
+            {
+
+                _logger.InfoFormat("Reading the data for time range: {0:G} to {1:G}", timeRange.StartTime.LocalTime, timeRange.EndTime.LocalTime);
+
+                PIHelpers.RecordedBulkParallelByChunks(
+                    timeRange,
+                    conf.BackfillMaxReadThreadCountMDP,
+                    conf.BackfillBulkParallelChunkSize,
+                    conf.BackfillBulkPageSize,
+                    true,
+                    (data) =>
+                    {
+                        // re-adjusting the timestamp before writing it to the PI Data Archive
+                        data.ForEach(v =>
+                    {
+                        v.Timestamp = v.Timestamp + _timeOffset;
+                    });
+
+                        _writeQueue.Add(new DataPacket() { Data = data });
+                    },
+                    _pointsProvider,
+                    0,
+                    _cancellationToken
+                    );
+
+            }
+
+
             _backfill = false;
             _logger.Info("Backfill Completed");
         }
@@ -83,10 +114,7 @@ namespace PIReplay.Core
         public void Run(int frequency)
         {
             _logger.Info("Starting the data collection process");
-
-            // if we are not backfilling, we are using the _nextStartTime, if we backfill, we make a data call to get it from the data.
-
-
+            
             _timer.Elapsed += (source, e) =>
             {
                 // here is a little logic to avoid the timer starting reading again if previous run was no completed.
@@ -102,7 +130,41 @@ namespace PIReplay.Core
                     _timer.Stop();
 
                     var timeRanges = GetTimeRanges(_pointsProvider);
-                    ReadData(timeRanges, Settings.General.Default.SleepTimeBetweenChunksMs);
+
+                    // inserts the data, sorted by time
+                    foreach (var timeRange in timeRanges)
+                    {
+
+                        _logger.InfoFormat("Reading the data for time range: {0:G} to {1:G}", timeRange.StartTime.LocalTime, timeRange.EndTime.LocalTime);
+
+                        if (_cancellationToken.IsCancellationRequested)
+                        {
+                            _logger.InfoFormat("Cancellation requested, stopping the data collection");
+                            return;
+                        }
+                            
+
+                        PIHelpers.RecordedBulkByChunks(
+                            timeRange,
+                            Settings.General.Default.NormalOpTagsChunkSize,
+                            true,
+                            (data) =>
+                            {
+                                // re-adjusting the timestamp before writing it to the PI Data Archive
+                                data.ForEach(v =>
+                                        {
+                                            v.Timestamp = v.Timestamp + _timeOffset;
+                                        });
+
+                                _writeQueue.Add(new DataPacket() { Data = data });
+                            },
+                            _pointsProvider,
+                            Settings.General.Default.NormalSleepTimeBetweenChunks,
+                            _cancellationToken
+                            );
+
+                    }
+
                 }
                 finally
                 {
@@ -118,63 +180,13 @@ namespace PIReplay.Core
         }
 
 
+
+
         /// <summary>
-        /// Procedure that reads data in the PI data Archive
-        /// It it will perform data reads on all tags for the same time period, then move to the next time period.
-        /// This way of reading ensures we are maximising the usage of the cache on the PI Data Archive
+        /// todo: needs refactoring to remove the if and separate the logic between backfill and not backfill
         /// </summary>
-        /// <param name="times">A list of AF Times to collect data from. </param>
-        /// <param name="sleep"> If necessary, to reduce CPU usage when calling this method frequently, you can pass a small sleep duration, it will wait this amount of time before making the data call for the next chunk of tags. this value is in ms.   </param>
-        private void ReadData(IEnumerable<AFTimeRange> timeRanges, int sleep = 0, bool returnsNoData=false)
-        {
-
-            try
-            {
-
-                var conf = Settings.General.Default;
-
-                // inserts the data, sorted by time
-                foreach (var timeRange in timeRanges)
-                {
-                    var i = 0;
-                    _logger.InfoFormat("Reading the data for time range: {0:G} to {1:G}", timeRange.StartTime.LocalTime, timeRange.EndTime.LocalTime);
-
-                    PIHelpers.RecordedBulkParallelByChunks(
-                        timeRange,
-                        4,
-                        conf.BulkParallelChunkSize,
-                        conf.BulkPageSize,
-                        returnsNoData,
-                        (data) =>
-                        {
-                            // re-adjusting the timestamp before writing it to the PI Data Archive
-                            data.ForEach(v =>
-                            {
-                                v.Timestamp = v.Timestamp + _timeOffset;
-                            });
-
-                            _writeQueue.Add(new DataPacket() { Data = data });
-                        },
-                        _pointsProvider,  
-                        sleep,
-                        cancellationToken
-                        );
-
-                    if (i == 0)
-                        throw new Exception("There is no PI Point returned by the search query. Please check the settings.");
-
-                }
-
-
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex);
-            }
-        }
-
-
-
+        /// <param name="provider"></param>
+        /// <returns></returns>
         private List<AFTimeRange> GetTimeRanges(PIPointsProvider provider)
         {
 
@@ -186,10 +198,10 @@ namespace PIReplay.Core
             {
                 startTime = DateTime.MaxValue;
                 int i = 0;
-                foreach (var tagChunk in provider.GetPointsByChunks(Settings.General.Default.TagsChunkSize)) // todo create a specific setting for this one
+                foreach (var tagChunk in provider.GetPointsByChunks(Settings.General.Default.BackfillTagsChunkSize))
                 {
                     i++;
-                    _logger.InfoFormat("Looking for minimum snapshot time in the data for tag chunk: {0} - chunk size: {1}", i, Settings.General.Default.TagsChunkSize);
+                    _logger.InfoFormat("Looking for minimum snapshot time in the data for tag chunk: {0} - chunk size: {1}", i, Settings.General.Default.BackfillTagsChunkSize);
                     var pointsList = new PIPointList(tagChunk);
                     var time = pointsList.CurrentValue().Min(v => v.Timestamp.LocalTime);
                     startTime = time < startTime ? time : startTime;
@@ -225,7 +237,7 @@ namespace PIReplay.Core
 
 
 
-     
+
 
     }
 }

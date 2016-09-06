@@ -68,7 +68,7 @@ namespace PIReplay.Core
 
             foreach (var vals in _dataQueue.GetConsumingEnumerable(cancelToken))
             {
-                vals.Data.Sort();
+                
                 _logger.InfoFormat("WRITTING {0} values", vals.Data.Count);
                 var insertMode = AFUpdateOption.InsertNoCompression;
 
@@ -81,6 +81,11 @@ namespace PIReplay.Core
                 //{
                 //    _logger.DebugFormat("writing {0} at {1}", val.Value,val.Timestamp);
                 //}
+
+
+
+                // sorting values before writing
+                vals.Data.Sort();
 
                 var errors=_server.UpdateValues(vals.Data, insertMode, AFBufferOption.BufferIfPossible);
 

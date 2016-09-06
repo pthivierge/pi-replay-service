@@ -25,7 +25,7 @@ namespace PIReplay.Settings {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("7")]
+        [global::System.Configuration.DefaultSettingValueAttribute("365")]
         public double ReplayTimeOffsetDays {
             get {
                 return ((double)(this["ReplayTimeOffsetDays"]));
@@ -44,18 +44,18 @@ namespace PIReplay.Settings {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("250")]
-        public int TagsChunkSize {
+        public int BackfillTagsChunkSize {
             get {
-                return ((int)(this["TagsChunkSize"]));
+                return ((int)(this["BackfillTagsChunkSize"]));
             }
         }
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("5")]
-        public int DataCollectionFrequencySeconds {
+        public int NormalDataCollectionFrequencySeconds {
             get {
-                return ((int)(this["DataCollectionFrequencySeconds"]));
+                return ((int)(this["NormalDataCollectionFrequencySeconds"]));
             }
         }
         
@@ -80,24 +80,24 @@ namespace PIReplay.Settings {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("100")]
-        public int BulkPageSize {
+        public int BackfillBulkPageSize {
             get {
-                return ((int)(this["BulkPageSize"]));
+                return ((int)(this["BackfillBulkPageSize"]));
             }
         }
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("100")]
-        public int BulkParallelChunkSize {
+        public int BackfillBulkParallelChunkSize {
             get {
-                return ((int)(this["BulkParallelChunkSize"]));
+                return ((int)(this["BackfillBulkParallelChunkSize"]));
             }
         }
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("08/12/2016 17:00:00")]
+        [global::System.Configuration.DefaultSettingValueAttribute("07/11/2016 15:00:00")]
         public global::System.DateTime BackfillDefaultStartTime {
             get {
                 return ((global::System.DateTime)(this["BackfillDefaultStartTime"]));
@@ -107,9 +107,27 @@ namespace PIReplay.Settings {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("50")]
-        public int SleepTimeBetweenChunksMs {
+        public int NormalSleepTimeBetweenChunks {
             get {
-                return ((int)(this["SleepTimeBetweenChunksMs"]));
+                return ((int)(this["NormalSleepTimeBetweenChunks"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("2000")]
+        public int NormalOpTagsChunkSize {
+            get {
+                return ((int)(this["NormalOpTagsChunkSize"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("4")]
+        public int BackfillMaxReadThreadCountMDP {
+            get {
+                return ((int)(this["BackfillMaxReadThreadCountMDP"]));
             }
         }
     }

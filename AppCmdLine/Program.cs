@@ -86,6 +86,7 @@ namespace PIReplay.CommandLine
 
                     if (options.deleteHistory != null && ValidateDeleteHistoryOptions(options.deleteHistory))
                     {
+                        
                         _logger.Info("Delete History Option Selected, will deleted the specified data.");
 
                         _logger.Info("This operation cannot be reversed, are you sure you want to delete the data you specified? Press Y to continue...");
@@ -109,7 +110,7 @@ namespace PIReplay.CommandLine
                             var et = AFTime.Parse(options.deleteHistory[2]);
                             _logger.InfoFormat("Deleting history for tag: {0} between {1:G} and {2:G}", piPoint.Name, st.LocalTime, et.LocalTime);
 
-                           PIHelpers.DeleteValues(piPoint, st, et);
+                           PIHelpers.DeleteValues(piPoint, st, et, options.ForceUpdateValuesMethod);
                         }
 
                     }

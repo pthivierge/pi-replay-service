@@ -3,15 +3,15 @@
   <Profiles />
   <Settings>
     <Setting Name="ReplayTimeOffsetDays" Type="System.Double" Scope="Application">
-      <Value Profile="(Default)">7</Value>
+      <Value Profile="(Default)">365</Value>
     </Setting>
     <Setting Name="BackFillHoursPerDataChunk" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">24</Value>
     </Setting>
-    <Setting Name="TagsChunkSize" Type="System.Int32" Scope="Application">
+    <Setting Name="BackfillTagsChunkSize" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">250</Value>
     </Setting>
-    <Setting Name="DataCollectionFrequencySeconds" Type="System.Int32" Scope="Application">
+    <Setting Name="NormalDataCollectionFrequencySeconds" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">5</Value>
     </Setting>
     <Setting Name="ServerName" Type="System.String" Scope="Application">
@@ -20,17 +20,23 @@
     <Setting Name="TagQueryString" Type="System.String" Scope="Application">
       <Value Profile="(Default)">tag:=simulator.random.*</Value>
     </Setting>
-    <Setting Name="BulkPageSize" Type="System.Int32" Scope="Application">
+    <Setting Name="BackfillBulkPageSize" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">100</Value>
     </Setting>
-    <Setting Name="BulkParallelChunkSize" Type="System.Int32" Scope="Application">
+    <Setting Name="BackfillBulkParallelChunkSize" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">100</Value>
     </Setting>
     <Setting Name="BackfillDefaultStartTime" Type="System.DateTime" Scope="Application">
-      <Value Profile="(Default)">08/12/2016 17:00:00</Value>
+      <Value Profile="(Default)">07/11/2016 15:00:00</Value>
     </Setting>
-    <Setting Name="SleepTimeBetweenChunksMs" Type="System.Int32" Scope="Application">
+    <Setting Name="NormalSleepTimeBetweenChunks" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">50</Value>
+    </Setting>
+    <Setting Name="NormalOpTagsChunkSize" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">2000</Value>
+    </Setting>
+    <Setting Name="BackfillMaxReadThreadCountMDP" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">4</Value>
     </Setting>
   </Settings>
 </SettingsFile>

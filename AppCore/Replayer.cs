@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using log4net;
@@ -36,6 +37,8 @@ namespace PIReplay.Core
         private static readonly ILog _logger = LogManager.GetLogger(typeof(Replayer));
         private DataReader _dataReader = null;
         private DataWriter _dataWriter = null;
+        private Task _mainTask = null;
+        private CancellationTokenSource _cancellationTokenSource =new CancellationTokenSource();
 
         private BlockingCollection<DataPacket> _queue=new BlockingCollection<DataPacket>();
 
@@ -59,21 +62,36 @@ namespace PIReplay.Core
             var connection=new PIConnection(server);
             var pointsProvier=new PIPointsProvider(pointsQuery,connection.GetPiServer());
 
-            _dataReader = new DataReader(pointsProvier, _queue);
+            _dataReader = new DataReader(pointsProvier, _queue, _cancellationTokenSource.Token);
             _dataWriter = new DataWriter(_queue, connection.GetPiServer());
             _dataWriter.Run();
             
-            _dataReader.RunBackfill();
+            _mainTask=Task.Run(()=>
+            {
+                _dataReader.RunBackfill();
+                _logger.Info("Starting the normal operations process");
+                _dataReader.Run(General.Default.NormalDataCollectionFrequencySeconds);
+            },_cancellationTokenSource.Token);
 
-            _logger.Info("Starting the normal operations process");
-            _dataReader.Run(General.Default.DataCollectionFrequencySeconds);
+
+
 
         }
 
         public void Stop()
         {
+
+
+            
             _dataReader.Stop();
             _dataWriter.Stop();
+
+            _logger.Info("Waiting for tasks to complete...");
+            _mainTask.Wait(15000);
+
+            _logger.Info("Completing the last tasks");
+            _cancellationTokenSource.Cancel();
+            
             _logger.Info("Application Stopped");
         }
 
