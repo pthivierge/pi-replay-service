@@ -36,6 +36,7 @@ namespace PIReplay.Settings.GUI
         private string _basePath;
         private string _configFilePath;
         private XmlDocument _xmlDocument;
+        
 
         public XmlSettingsManager(string settingsNameSpace, string configFilePath, string iniFilePath = null)
         {
@@ -131,8 +132,10 @@ namespace PIReplay.Settings.GUI
                 }
             }
 
+            var xmlWriterSettings = new XmlWriterSettings { Indent = true };
+            var writer = XmlWriter.Create(_configFilePath, xmlWriterSettings);
 
-            _xmlDocument.Save(_configFilePath);
+            _xmlDocument.Save(writer);
         }
 
 
