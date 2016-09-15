@@ -59,38 +59,64 @@ namespace PIReplay.Core
 
         public void Run(string server, string pointsQuery)
         {
-            var connection=new PIConnection(server);
-            var pointsProvier=new PIPointsProvider(pointsQuery,connection.GetPiServer());
 
-            _dataReader = new DataReader(pointsProvier, _queue, _cancellationTokenSource.Token);
-            _dataWriter = new DataWriter(_queue, connection.GetPiServer());
-            _dataWriter.Run();
-            
-            _mainTask=Task.Run(()=>
+            var connection = new PIConnection(server);
+
+
+            _mainTask = Task.Run(() =>
             {
+                WaitForServerToBeAvailable(connection);
+
+                var pointsProvier = new PIPointsProvider(pointsQuery, connection.GetPiServer());
+
+                _dataReader = new DataReader(pointsProvier, _queue, _cancellationTokenSource.Token);
+                _dataWriter = new DataWriter(_queue, connection.GetPiServer());
+                _dataWriter.Run();
+
                 _dataReader.RunBackfill();
                 _logger.Info("Starting the normal operations process");
                 _dataReader.Run(General.Default.NormalDataCollectionFrequencySeconds);
-            },_cancellationTokenSource.Token);
-
+            }, _cancellationTokenSource.Token);
 
 
 
         }
 
+        private void WaitForServerToBeAvailable(PIConnection connection)
+        {
+            var isConnected = false;
+            while (!isConnected)
+            {
+                isConnected = connection.Connect();
+
+                if (!isConnected)
+                {
+                    _logger.InfoFormat("Could not connect to the server, waiting 5s to try to reconnect.");
+                    Thread.Sleep(TimeSpan.FromSeconds(5));
+                }
+
+                if (_cancellationTokenSource.Token.IsCancellationRequested)
+                {
+                    _logger.InfoFormat("Cancellation requested, exiting WaitForServerToBeAvailable");
+                    return;
+                }
+            }
+            
+        }
+
         public void Stop()
         {
 
+            _cancellationTokenSource.Cancel();
 
-            
-            _dataReader.Stop();
-            _dataWriter.Stop();
+            _dataReader?.Stop();
+            _dataWriter?.Stop();
 
             _logger.Info("Waiting for tasks to complete...");
             _mainTask.Wait(15000);
 
             _logger.Info("Completing the last tasks");
-            _cancellationTokenSource.Cancel();
+            
             
             _logger.Info("Application Stopped");
         }
