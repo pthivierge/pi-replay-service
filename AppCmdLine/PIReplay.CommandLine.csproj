@@ -85,7 +85,10 @@
       <HintPath>..\packages\log4net.2.0.5\lib\net45-full\log4net.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="OSIsoft.AFSDK, Version=4.0.0.0, Culture=neutral, PublicKeyToken=6238be57836698e6, processorArchitecture=MSIL" />
+    <Reference Include="OSIsoft.AFSDK, Version=4.0.0.0, Culture=neutral, PublicKeyToken=6238be57836698e6, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -117,44 +120,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>if $(ConfigurationName)==Release goto release
-goto copytoBuildFolder
-
-::----------------------------------------
-:: Merging the dlls togheter in case of a release
-::----------------------------------------
-:release
-:: http://stackoverflow.com/questions/9376/ilmerge-best-practices
-rem Create a single .exe that combines the root .exe and all subassemblies.
-del *.pdb
-"$(SolutionDir)ILMerge.exe" /out:"$(TargetDir)$(TargetName).all.exe" "$(TargetDir)$(TargetName).exe" "$(TargetDir)*.dll" /target:exe /targetplatform:v4,C:\Windows\Microsoft.NET\Framework64\v4.0.30319 /wildcards /internalize
-rem Remove all subassemblies.
-del *.dll
-
-rem Delete the original, non-combined .exe.
-del "$(TargetDir)$(TargetName).exe"
-rem Rename the combined .exe and .pdb to the original project name we started with.
-
-ren "$(TargetDir)$(TargetName).all.exe" "$(TargetName).exe"
-ren "$(TargetDir)$(TargetName).all.pdb" "$(TargetName).pdb"
-
-::----------------------------------------
-:: Copy to buid folder
-::----------------------------------------
-:copytoBuildFolder
-SET output="..\..\..\Build"
-if not exist "%25output%25" mkdir "%25output%25"
-if not exist "%25output%25\bin" mkdir "%25output%25\bin"
-
-robocopy "$(TargetDir)." "%25output%25\." *.exe *.pdb *.config *.ini *.ico *.html *.cfg.xml /XO /NJH /NP /S
-robocopy "$(TargetDir)." "%25output%25\bin\." *.dll /XO /NJH /NP /S
-if errorlevel 4 goto BuildEventFailed
-if errorlevel 0 goto end
-
-:BuildEventFailed echo FILECOPY for $(ProjectName) FAILED
-exit 1
-:end echo FILECOPY for $(ProjectName) COMPLETED OK
-exit 0</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
