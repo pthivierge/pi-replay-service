@@ -26,8 +26,7 @@ jobs:
          username: codera
          password: ${{ secrets.DOCKERHUBTOKEN }}
     steps:  
-    - uses: actions/checkout@v2
-    
+
     - name: What OS version is running
       run: powershell -c [System.Environment]::OSVersion.Version
 
